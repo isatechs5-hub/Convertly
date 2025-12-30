@@ -52,7 +52,18 @@ export const Login: React.FC<LoginProps> = ({ setView }) => {
       }
     } catch (err: any) {
       console.error("Auth failed", err);
-      setError(err.message || "Authentication failed. Please check your credentials.");
+      let msg = err.message || "Authentication failed.";
+      
+      // Improve error messages for common deployment issues
+      if (msg.includes("auth/unauthorized-domain")) {
+        msg = "Domain not authorized. Add this domain to Firebase Console > Auth > Settings > Authorized Domains.";
+      } else if (msg.includes("api-key") || msg.includes("project-id")) {
+        msg = "Configuration missing. Check Vercel Environment Variables.";
+      } else if (msg.includes("auth/invalid-credential")) {
+        msg = "Invalid email or password.";
+      }
+
+      setError(msg);
       setIsLoading(false);
     }
   };
@@ -70,7 +81,17 @@ export const Login: React.FC<LoginProps> = ({ setView }) => {
       }
     } catch (err: any) {
       console.error("Social login failed", err);
-      setError("Social login cancelled or failed.");
+      let msg = "Social login failed.";
+      
+      if (err.code === 'auth/unauthorized-domain') {
+        msg = "Domain not authorized. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains and add your Vercel domain.";
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        msg = "Login cancelled.";
+      } else if (err.message?.includes("configuration")) {
+        msg = "Firebase config missing. Check Vercel Env Vars.";
+      }
+
+      setError(msg);
       setIsLoading(false);
     }
   };

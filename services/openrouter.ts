@@ -35,7 +35,9 @@ export const generateDocumentContent = async (enhancedPrompt: string, type: stri
     });
 
     if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error("OpenRouter API Error Details:", errorData);
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
     }
 
     const data = await response.json();
@@ -71,7 +73,9 @@ export const chatWithPdf = async (contextText: string, userQuestion: string): Pr
     });
 
     if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error("OpenRouter Chat API Error Details:", errorData);
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
     }
 
     const data = await response.json();
