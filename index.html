@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Convertly - The Ultimate Professional AI PDF Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- PDF Rendering & Manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+      (function() {
+        const theme = localStorage.getItem('omni-pdf-theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+            colors: {
+              brand: {
+                50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e',
+                600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337',
+              }
+            },
+            animation: {
+              'premium-reveal': 'premiumReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'content-fade': 'contentFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'smooth-float': 'smoothFloat 6s ease-in-out infinite',
+              'shimmer-premium': 'shimmerPremium 2.5s infinite linear',
+              'glow-pulse': 'glowPulse 3s infinite ease-in-out',
+            },
+            keyframes: {
+              contentFade: {
+                '0%': { opacity: '0', transform: 'translateY(-10px) scale(0.95)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+              },
+              premiumReveal: {
+                '0%': { opacity: '0', transform: 'translateY(20px) scale(0.98)', filter: 'blur(8px)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)', filter: 'blur(0)' }
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              },
+              smoothFloat: {
+                '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                '50%': { transform: 'translateY(-20px) rotate(1deg)' }
+              },
+              shimmerPremium: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' }
+              },
+              glowPulse: {
+                '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+                '50%': { opacity: '0.6', transform: 'scale(1.05)' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+      .noise-bg::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('https://grainy-gradients.vercel.app/noise.svg');
+        opacity: 0.05;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      .dark .noise-bg::before { opacity: 0.08; filter: invert(1); }
+      
+      .modern-glass { 
+        background: rgba(255, 255, 255, 0.7); 
+        backdrop-filter: blur(20px) saturate(180%); 
+        border: 1px solid rgba(255, 255, 255, 0.3); 
+      }
+      .dark .modern-glass { 
+        background: rgba(15, 23, 42, 0.7); 
+        border: 1px solid rgba(255, 255, 255, 0.05); 
+      }
+      
+      .grid-stagger > * { opacity: 0; animation: premiumReveal 0.6s forwards; }
+      .grid-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+      .grid-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+      .grid-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+      .grid-stagger > *:nth-child(4) { animation-delay: 0.2s; }
+      .grid-stagger > *:nth-child(5) { animation-delay: 0.25s; }
+      .grid-stagger > *:nth-child(6) { animation-delay: 0.3s; }
+      .grid-stagger > *:nth-child(7) { animation-delay: 0.35s; }
+      .grid-stagger > *:nth-child(8) { animation-delay: 0.4s; }
+      .grid-stagger > *:nth-child(9) { animation-delay: 0.45s; }
+      .grid-stagger > *:nth-child(10) { animation-delay: 0.5s; }
+      .grid-stagger > *:nth-child(11) { animation-delay: 0.55s; }
+      .grid-stagger > *:nth-child(12) { animation-delay: 0.6s; }
+      .grid-stagger > *:nth-child(n+13) { animation-delay: 0.65s; }
+
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react/": "https://esm.sh/react@19.0.0/",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "pdf-lib": "https://esm.sh/pdf-lib@1.17.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-[#fafafa] dark:bg-[#020617] text-slate-900 dark:text-slate-100 antialiased selection:bg-brand-500/30 noise-bg transition-colors duration-500">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
