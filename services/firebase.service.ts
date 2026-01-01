@@ -115,9 +115,12 @@ export const addUserDocument = async (user: User) => {
                 await set(ref(realtimeDb, 'users/' + user.uid + '/lastLogin'), update.lastLogin);
             } catch (e) { /* Ignore RTDB error */ }
         }
-    } catch (error) {
+    } catch (error: any) {
         // Silently fail if Firestore is also locked, so app doesn't crash
-        console.warn("User document sync skipped:", error);
+        // 'unavailable' is common when offline or initial load
+        if (error?.code !== 'unavailable' && !error?.message?.includes('offline')) {
+            console.warn("User document sync skipped:", error);
+        }
     }
 };
 

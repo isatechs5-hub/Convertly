@@ -16,6 +16,7 @@ export const AiPdfGenerator: React.FC<Props> = ({ setView }) => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [docType, setDocType] = useState<'report' | 'essay' | 'summary' | 'business-plan' | 'resume' | 'cover-letter' | 'research-paper' | 'case-study' | 'proposal' | 'whitepaper' | 'presentation' | 'newsletter'>('report');
   const [statusMsg, setStatusMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // 🆕 NEW FEATURES STATE
   const [language, setLanguage] = useState('english');
@@ -114,6 +115,7 @@ export const AiPdfGenerator: React.FC<Props> = ({ setView }) => {
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setIsLoading(true);
+    setErrorMsg('');
     setGeneratedContent('');
 
     const steps = [
@@ -161,8 +163,8 @@ export const AiPdfGenerator: React.FC<Props> = ({ setView }) => {
       setWordCount(content.split(/\s+/).length);
       setReadabilityScore(calculateReadability(content));
 
-    } catch (error) {
-      alert("AI Generation failed. Check your API key.");
+    } catch (error: any) {
+      setErrorMsg(error.message || "AI Generation failed. Please try again.");
     } finally {
       clearInterval(interval);
       setIsLoading(false);
@@ -424,6 +426,12 @@ export const AiPdfGenerator: React.FC<Props> = ({ setView }) => {
             <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100 dark:border-slate-800">
               <div className="flex flex-col">
                 <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-xl uppercase">Document Output</h3>
+                {errorMsg && (
+                  <div className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg border border-red-100 dark:border-red-800 flex items-center gap-2 animate-in slide-in-from-top-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                    {errorMsg}
+                  </div>
+                )}
                 {generatedContent && (
                   <div className="flex gap-4 mt-2">
                     <span className="text-xs font-bold text-slate-400 flex items-center gap-1">

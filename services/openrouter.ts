@@ -2,7 +2,7 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 const SITE_URL = window.location.origin;
 const SITE_NAME = "OmniPDF AI";
-const MODEL = "meta-llama/llama-3.1-405b-instruct:free";
+const MODEL = "google/gemini-2.0-flash-exp:free";
 
 const getHeaders = () => ({
   "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
@@ -11,6 +11,7 @@ const getHeaders = () => ({
   "Content-Type": "application/json"
 });
 
+// Force non-streaming response as components expect full text
 export const generateDocumentContent = async (enhancedPrompt: string, type: string): Promise<string> => {
   if (!OPENROUTER_API_KEY) {
     throw new Error("OpenRouter API Key missing. Please set VITE_OPENROUTER_API_KEY in your .env file.");
@@ -22,6 +23,7 @@ export const generateDocumentContent = async (enhancedPrompt: string, type: stri
   Do not include conversational filler like "Here is your report" - just output the document content directly.`;
 
   try {
+    // 🆕 Use exact structure requested by user
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: getHeaders(),
@@ -30,18 +32,29 @@ export const generateDocumentContent = async (enhancedPrompt: string, type: stri
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: enhancedPrompt }
-        ]
+        ],
+        stream: false // Explicitly disable streaming to ensure compatibility with current UI
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error("OpenRouter API Error Details:", errorData);
-      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
+      
+      let userMessage = "The AI service is currently unavailable.";
+      if (response.status === 401) userMessage = "Authentication failed. Please verify your API Key.";
+      if (response.status === 402) userMessage = "Insufficient credits in your AI account.";
+      if (response.status === 429) userMessage = "Rate limit exceeded. Please try again later.";
+      
+      throw new Error(userMessage);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || "No content generated.";
+    if (data.error) {
+        throw new Error(data.error.message || "AI Provider returned an error.");
+    }
+    
+    return data.choices?.[0]?.message?.content || "No content generated.";
   } catch (error: any) {
     console.error("OpenRouter Generation Error:", error);
     throw new Error(error.message || "Failed to generate AI content.");
@@ -50,10 +63,10 @@ export const generateDocumentContent = async (enhancedPrompt: string, type: stri
 
 export const chatWithPdf = async (contextText: string, userQuestion: string): Promise<string> => {
   if (!OPENROUTER_API_KEY) {
-    throw new Error("OpenRouter API Key missing. Please set VITE_OPENROUTER_API_KEY in your .env file.");
+    return "Configuration Error: API Key is missing. Please check your settings.";
   }
 
-  const systemPrompt = "You are an intelligent PDF assistant. You have access to the content of one or more documents. specific instructions about persona, language, or output format (like creating quizzes or tables).";
+  const systemPrompt = "You are an intelligent PDF assistant. You have access to the content of one or more documents.";
 
   // Increased context limit to 100,000 characters to support multiple PDFs
   const context = contextText.substring(0, 100000);
@@ -68,20 +81,21 @@ export const chatWithPdf = async (contextText: string, userQuestion: string): Pr
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
-        ]
+        ],
+        stream: false // Explicitly disable streaming
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("OpenRouter Chat API Error Details:", errorData);
-      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
+      if (response.status === 401) return "Access Denied: Invalid API Key. Please check your configuration.";
+      if (response.status === 402) return "Service Error: Insufficient AI credits.";
+      return "I'm having trouble connecting to the AI service right now. Please try again.";
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || "No response generated.";
+    return data.choices?.[0]?.message?.content || "I couldn't generate a response.";
   } catch (error: any) {
     console.error("OpenRouter Chat Error:", error);
-    return `AI Assistant Error: ${error.message || "Could not reach AI service."}`;
+    return "Connection Error: Unable to reach the AI service.";
   }
 };
