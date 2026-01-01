@@ -1,7 +1,0 @@
-{
-  "name": "Convertly AI SaaS",
-  "description": "A production-ready SaaS-style PDF toolkit featuring AI document generation, image-to-PDF conversion, merging capabilities, and a developer roadmap guide.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}

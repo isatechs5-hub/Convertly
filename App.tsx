@@ -44,7 +44,7 @@ import {
   repairPdfDocument, compressPdfDocument, convertPdfToGrayscale,
   sanitizePdfMetadata, extractFullTextFromPdf, addBatesNumbering
 } from './services/pdfUtils';
-import { convertToMarkdown, scoreResume, translatePdfText } from './services/gemini';
+import { convertToMarkdown, scoreResume, translatePdfText } from './services/openrouter';
 import { GlobalAiAssistant } from './components/GlobalAiAssistant';
 
 const Pricing = ({ setView }: { setView: (v: AppView) => void }) => {

@@ -99,9 +99,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
   };
 
   const navItemClass = (isActive: boolean) =>
-    `px-4 py-2 text-sm font-bold transition-all flex items-center gap-2 rounded-xl cursor-pointer select-none ${isActive
-      ? 'text-brand-600 bg-brand-500/10'
-      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
+    `px-4 py-2 text-sm font-bold transition-all duration-300 flex items-center gap-2 rounded-xl cursor-pointer select-none relative overflow-hidden group ${isActive
+      ? 'text-brand-600 bg-brand-500/10 shadow-lg shadow-brand-500/20 scale-105 ring-2 ring-brand-500/50'
+      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:scale-105 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:translate-x-[-100%] group-hover:before:translate-x-[100%] before:transition-transform before:duration-700 after:absolute after:inset-0 after:bg-gradient-to-t after:from-transparent after:via-brand-500/5 after:to-transparent after:translate-y-[100%] group-hover:after:translate-y-[-100%] after:transition-transform after:duration-500'
     }`;
 
   const categories = useMemo(() => [
@@ -207,10 +207,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
           {/* Logo & Menu */}
           <div className="flex items-center gap-8">
             <div className="flex items-center cursor-pointer gap-2.5 group" onClick={() => navigate(AppView.HOME)}>
-              <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-500/20 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                <FileText className="h-5 w-5 text-white" />
+              <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-brand-500/30 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/20 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 transition-colors duration-300"></div>
+                <FileText className="h-5 w-5 text-white relative z-10 group-hover:animate-pulse" />
               </div>
-              <span className="font-black text-2xl text-slate-900 dark:text-white tracking-tighter">Convertly</span>
+              <span className="font-black text-2xl text-slate-900 dark:text-white tracking-tighter group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors duration-300 relative">
+                Convertly
+                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 group-hover:w-full transition-all duration-500"></div>
+              </span>
             </div>
 
             <div className="hidden lg:flex items-center gap-1">
@@ -323,29 +329,47 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                 <>
                   <button
                     onClick={() => navigate(AppView.LOGIN)}
-                    className="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 transition-colors"
+                    className="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-brand-600 transition-all duration-300 hover:scale-105 relative overflow-hidden group"
                   >
-                    Sign In
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/5 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                    <div className="absolute inset-0 rounded-lg border border-transparent group-hover:border-brand-200/50 dark:group-hover:border-brand-800/30 transition-colors duration-300"></div>
+                    <span className="relative z-10">Sign In</span>
                   </button>
                   <button
                     onClick={() => navigate(AppView.LOGIN)}
-                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-all shadow-xl shadow-slate-900/10 flex items-center gap-2 active:scale-95"
+                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-600 dark:hover:bg-brand-600 dark:hover:text-white transition-all duration-300 shadow-xl shadow-slate-900/10 flex items-center gap-2 active:scale-95 hover:scale-105 hover:shadow-brand-500/25 relative overflow-hidden group"
                   >
-                    Get Started <ArrowRight className="h-3 w-3" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                    <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 transition-colors duration-300"></div>
+                    <span className="relative z-10 flex items-center gap-2">
+                      Get Started <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                    </span>
                   </button>
                   <button
                     onClick={toggleTheme}
-                    className="p-2.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-90"
+                    className="p-2.5 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-all duration-300 active:scale-90 hover:scale-110 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 relative overflow-hidden group"
                     aria-label="Toggle Theme"
                   >
-                    {isDarkMode ? <Sun className="h-5 w-5 text-amber-400 animate-in zoom-in spin-in-90 duration-500" /> : <Moon className="h-5 w-5 text-indigo-500 animate-in zoom-in spin-in-90 duration-500" />}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/5 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                    <div className="absolute inset-0 rounded-xl border border-transparent group-hover:border-brand-200/50 dark:group-hover:border-brand-800/30 transition-colors duration-300"></div>
+                    <div className="relative z-10">
+                      {isDarkMode ? <Sun className="h-5 w-5 text-amber-400 animate-in zoom-in spin-in-90 duration-500 group-hover:rotate-12 transition-transform duration-300" /> : <Moon className="h-5 w-5 text-indigo-500 animate-in zoom-in spin-in-90 duration-500 group-hover:rotate-12 transition-transform duration-300" />}
+                    </div>
                   </button>
                 </>
               )}
             </div>
 
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-[110] relative">
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-300 z-[110] relative hover:scale-110 hover:shadow-md overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/5 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+              <div className="absolute inset-0 rounded-xl border border-transparent group-hover:border-brand-200/50 dark:group-hover:border-brand-800/30 transition-colors duration-300"></div>
+              <div className="relative z-10">
+                {isMobileMenuOpen ? <X className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" /> : <Menu className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />}
+              </div>
             </button>
           </div>
         </div>
@@ -370,10 +394,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                     <li
                       key={lIdx}
                       onMouseDown={(e) => navigate(link.view, e)}
-                      className="group/item text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-all py-2 flex items-center gap-2 hover:translate-x-1"
+                      className="group/item text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-all duration-300 py-2 px-3 rounded-xl flex items-center gap-2 hover:translate-x-1 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-md relative overflow-hidden"
                     >
                       <div className="w-0 h-px bg-brand-500 group-hover/item:w-3 transition-all duration-300"></div>
-                      {link.label}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500/10 to-transparent -translate-x-full group-hover/item:translate-x-full transition-transform duration-500"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/5 to-transparent translate-y-full group-hover/item:translate-y-0 transition-transform duration-700"></div>
+                      <div className="absolute inset-0 rounded-xl border border-transparent group-hover/item:border-brand-200/50 dark:group-hover/item:border-brand-800/30 transition-colors duration-300"></div>
+                      <span className="relative z-10">{link.label}</span>
+                      <div className="absolute top-1/2 -right-2 w-2 h-2 bg-brand-500 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 transform -translate-y-1/2"></div>
                     </li>
                   ))}
                 </ul>
@@ -430,9 +458,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, setView }) => {
                     <button
                       key={lIdx}
                       onClick={() => navigate(link.view)}
-                      className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl font-bold text-[11px] text-left text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 active:bg-brand-500 active:text-white transition-colors"
+                      className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl font-bold text-[11px] text-left text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-200 dark:hover:border-brand-800 hover:scale-105 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-800/50 transition-all duration-300 relative overflow-hidden group"
                     >
-                      {link.label}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-400/5 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                      <div className="absolute inset-0 rounded-xl border border-transparent group-hover:border-brand-200/50 dark:group-hover:border-brand-800/30 transition-colors duration-300"></div>
+                      <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-brand-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <span className="relative z-10">{link.label}</span>
                     </button>
                   ))}
                 </div>
