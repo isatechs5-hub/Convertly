@@ -1,72 +1,67 @@
-import { OpenRouter } from "@openrouter/sdk";
+// import { OpenRouter } from "@openrouter/sdk"; 
+// SDK removed to ensure browser compatibility via raw fetch
 
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+// Fallback to hardcoded key if env var is missing or stale
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "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";
 const SITE_URL = window.location.origin;
 const SITE_NAME = "OmniPDF AI";
-const MODEL = "kwaipilot/kat-coder-pro:free";
-
-// Initialize OpenRouter SDK
-const openrouter = new OpenRouter({
-  apiKey: OPENROUTER_API_KEY,
-});
+const MODEL = "deepseek/deepseek-r1-0528:free";
 
 /**
- * Helper function to handle chat requests using OpenRouter SDK
- * Accumulates streaming response into a single string for compatibility
+ * Helper function to handle chat requests using raw fetch
+ * Ensures compatibility with browser environments where Node SDKs might fail
  */
 const performChatRequest = async (messages: any[]): Promise<string> => {
+  // Debug log to verify key presence (safety: only log length)
+  console.log(`[OpenRouter] Initializing request. Key length: ${OPENROUTER_API_KEY?.length || 0}`);
+
   if (!OPENROUTER_API_KEY) {
-    throw new Error("OpenRouter API Key missing. Please set VITE_OPENROUTER_API_KEY in your .env file.");
+    throw new Error("OpenRouter API Key missing. Please check your configuration.");
   }
 
   try {
-    const stream = await openrouter.chat.send({
-      model: MODEL,
-      messages: messages,
-      stream: true, // Using streaming as requested by user pattern
-      // @ts-ignore - SDK types might not fully cover extra headers yet, but OpenRouter supports them
-      extraHeaders: {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY.trim()}`, // Ensure no whitespace
         "HTTP-Referer": SITE_URL,
         "X-Title": SITE_NAME,
-      }
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: messages,
+        stream: false
+      })
     });
 
-    let fullContent = "";
-    
-    // Iterate over the stream to collect the full response
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        fullContent += content;
-      }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("OpenRouter API Error:", errorData);
+      
+      let userMessage = "The AI service is currently unavailable.";
+      if (response.status === 401) userMessage = "Authentication failed. Please verify your API Key.";
+      if (response.status === 402) userMessage = "Insufficient credits in your AI account.";
+      if (response.status === 429) userMessage = "Rate limit exceeded. Please try again later.";
+      
+      throw new Error(userMessage);
     }
 
-    if (!fullContent) {
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
       throw new Error("No content generated from AI service.");
     }
 
-    return fullContent;
+    return content;
 
   } catch (error: any) {
     console.error("OpenRouter Service Error:", error);
-    
-    // Enhanced error handling for user feedback
-    let userMessage = "The AI service is currently unavailable.";
-    
-    // Check for common error patterns in the error object or message
-    if (error.status === 401 || error.message?.includes("401") || error.message?.includes("key")) {
-      userMessage = "Authentication failed. Please verify your API Key.";
-    } else if (error.status === 402 || error.message?.includes("402") || error.message?.includes("credit")) {
-      userMessage = "Insufficient credits in your AI account.";
-    } else if (error.status === 429 || error.message?.includes("429") || error.message?.includes("rate limit")) {
-      userMessage = "Rate limit exceeded. Please try again later.";
-    }
-    
-    throw new Error(userMessage);
+    throw new Error(error.message || "Failed to connect to AI service.");
   }
 };
 
-// Force non-streaming response as components expect full text
 export const generateDocumentContent = async (enhancedPrompt: string, type: string): Promise<string> => {
   const systemPrompt = `You are a world-class professional document writer and editor. Your task is to write a high-quality, professionally formatted ${type}. 
   Follow all specific constraints (Tone, Language, Citation Style, Length) strictly. 
@@ -84,7 +79,7 @@ export const generateDocumentContent = async (enhancedPrompt: string, type: stri
 export const chatWithPdf = async (contextText: string, userQuestion: string): Promise<string> => {
   const systemPrompt = "You are an intelligent PDF assistant. You have access to the content of one or more documents.";
 
-  // Increased context limit to 100,000 characters to support multiple PDFs
+  // Context limit
   const context = contextText.substring(0, 100000);
   const userPrompt = `Documents Content:\n${context}\n\nUser Request: ${userQuestion}`;
 
